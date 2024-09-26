@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Auth.DTO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net.Http.Json;
 using System.Reflection;
-using Auth.DTO;
+using System.Text;
+using System.Text.Json;
 
 namespace Auth.Tests.ApiEndpoints;
 
@@ -20,7 +22,7 @@ public class ApiEndpointsTests
     }
 
     [Test]
-    public async Task ServiceAlive_Should_Return_ServiceAlive_Dto()
+    public async Task ServiceAlive_Should_Return_ServiceAliveDto()
     {
         // Act
         var response = await _httpClient.GetAsync("/api");
@@ -30,6 +32,23 @@ public class ApiEndpointsTests
 
         // Assert
         Assert.That(serviceAlive.Version, Is.EqualTo(Assembly.GetEntryAssembly().GetName().Version.ToString()));
+    }
+
+    [Test]
+    public async Task Login_Should_Call_Manager_And_Return_UserDto()
+    {
+        // Arrange
+        var loginDto = new Login { Email = "test", Password = "pw" };
+        var loginJson = new StringContent(JsonSerializer.Serialize(loginDto), Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await _httpClient.PostAsync("/api/login", loginJson);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<UserDto>();
+
+        // Assert
+        Assert.That(result.Email, Is.EqualTo(loginDto.Email));
     }
 
     [TearDown]

@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using Auth.DTO;
+﻿using Auth.DTO;
+using System.Reflection;
 
 namespace Auth.ApiEndpoints;
 
@@ -9,6 +9,7 @@ public static class ApiEndpoints
     {
         app.MapGet("/", ServiceAlive);
         app.MapGet("/api", ServiceAlive);
+        app.MapPost("/api/login", LoginAsync);
 
         app.UseCors(builder =>
             {
@@ -23,4 +24,7 @@ public static class ApiEndpoints
 
     private static ServiceAlive ServiceAlive()
         => new() { Version = Assembly.GetEntryAssembly().GetName().Version.ToString() };
+
+    private async static Task<UserDto> LoginAsync(Login login)
+        => await Task.FromResult(new UserDto(Guid.NewGuid(), login.Email, "JWT-" + login.Password));
 }
